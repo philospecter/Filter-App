@@ -6,6 +6,28 @@
 
 using namespace std;
 
+// =============================================================
+// FILTER 1 - GRAYSCALE
+// =============================================================
+
+void grayscale(Image& image)
+{
+    for (int y = 0; y < image.height; y++)
+    {
+        for (int x = 0; x < image.width; x++)
+        {
+            int r = image.getPixel(x, y, 0);
+            int g = image.getPixel(x, y, 1);
+            int b = image.getPixel(x, y, 2);
+            int gray = (r + g + b) / 3;
+            image.setPixel(x, y, 0, gray);
+            image.setPixel(x, y, 1, gray);
+            image.setPixel(x, y, 2, gray);
+        }
+    }
+}
+
+
 
 // ============================================================
 // FILTER 2 - BLACK & WHITE
@@ -40,6 +62,72 @@ void blackAndWhite(Image& image)
         }
     }
 }
+
+
+
+// ============================================================
+// FILTER 5 - FLIP
+// ============================================================
+
+void flip(Image& image)
+{
+    int choice;
+    cout << "===================\n";
+    cout << "1.flip horizontal\n";
+    cout << "2.flip vertical  \n";
+    cout << "enter your choice: ";
+    cin >> choice;
+
+    if (choice == 1)
+    {
+        Image new_image(image.width, image.height);
+
+        for (int y = 0; y < image.height; y++)
+        {
+            for (int x = 0; x < image.width; x++)
+            {
+               
+                int r = image.getPixel(x, y, 0);
+                int g = image.getPixel(x, y, 1);
+                int b = image.getPixel(x, y, 2);
+                int new_x = image.width - 1 - x;
+                new_image.setPixel(new_x, y, 0, r);
+                new_image.setPixel(new_x, y, 1, g);
+                new_image.setPixel(new_x, y, 2, b);
+                
+            }
+        }
+        image = new_image;
+
+
+    }
+    else if (choice == 2)
+    {
+        Image new_image(image.width, image.height);
+        for (int y = 0;y < image.height;y++)
+        {
+            for (int x = 0;x < image.width;x++)
+            {
+                int r = image.getPixel(x, y, 0);
+                int g = image.getPixel(x, y, 1);
+                int b = image.getPixel(x, y, 2);
+                int new_y = image.height - 1 - y;
+                new_image.setPixel(x, new_y, 0, r);
+                new_image.setPixel(x, new_y, 1, g);
+                new_image.setPixel(x, new_y, 2, b);
+            }
+        }
+       
+        image = new_image;
+
+
+    }
+    else
+    {
+        cout << "invalide flip choice\n";
+    }
+}
+
 
 
 // ============================================================
@@ -151,21 +239,31 @@ int main()
         cout << "\n==============================\n";
         cout << "       IMAGE FILTERS\n";
         cout << "==============================\n";
-        cout << "1. Black & White\n";
-        cout << "2. Rotate\n";
-        cout << "3. Exit\n";
+        cout << "1. grayscale\n";
+        cout << "2. Black & White\n";
+        cout << "5. flip\n";
+        cout << "6. Rotate\n";
+        cout << "17. Exit\n";
         cout << "Enter your choice: ";
         cin >> choice;
 
         if (choice == 1)
         {
-            blackAndWhite(image);
+            grayscale(image);
         }
         else if (choice == 2)
         {
+            blackAndWhite(image);
+        }
+        else if (choice == 5)
+        {
+            flip(image);
+        }
+        else if (choice == 6)
+        {
             rotate(image);
         }
-        else if (choice == 3)
+        else if (choice == 17)
         {
             return 0;
         }
