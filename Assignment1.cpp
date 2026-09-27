@@ -62,8 +62,25 @@ void blackAndWhite(Image& image)
         }
     }
 }
+// ============================================================
+// FILTER 3 - INVERT
+// ============================================================
+ void invert(Image& image){
+    
+    for (int y = 0; y < image.height; y++)
+    {
+        for (int x = 0; x < image.width; x++)
+        {
+            int r = image.getPixel(x, y, 0);
+            int g = image.getPixel(x, y, 1);
+            int b = image.getPixel(x, y, 2);
 
-
+            image.setPixel(x, y, 0, 255 - r);
+            image.setPixel(x, y, 1, 255 - g);
+            image.setPixel(x, y, 2, 255 - b);
+        }
+    }
+ }
 
 // ============================================================
 // FILTER 5 - FLIP
@@ -216,8 +233,69 @@ void rotate(Image& image)
         cout << "Invalid rotation choice.\n";
     }
 }
+// ============================================================
+// FILTER 7 - Darken and Lighten
+// ============================================================
+    void darkenAndLighten(Image& image)
+    {
+        int percentage;
+    cout << "Enter percentage to darken or lighten (negative for darken, positive for lighten): ";
+    cin >> percentage;
+    while (percentage < -100 || percentage > 100)
+    {
+        cout << "Invalid percentage. Please enter a value between -100 and 100." << endl;
+        cout << "Enter percentage: ";
+        cin >> percentage;
+    }
+    if (percentage < 0)
+    {
+        double factorValue = 1 - (abs(percentage) / 100.0);
+        for (int y = 0; y < image.height; y++)
+        {
+            for (int x = 0; x < image.width; x++)
+            {
+              int r = image.getPixel(x, y, 0);
+                int g = image.getPixel(x, y, 1);
+                int b = image.getPixel(x, y, 2);
+
+                image.setPixel(x,y, 0 , r*factorValue);
+                image.setPixel(x,y, 1 , g*factorValue);
+                image.setPixel(x,y, 2 , b*factorValue);
+            }
+        }
+    }
+    else
+    {
+
+        double factorValue = 1 + (percentage / 100.0);
+    
+        for (int y = 0; y < image.height; y++)
+        {
+            for (int x = 0; x < image.width; x++)
+            {
+                int r = image.getPixel(x, y, 0);
+                int g = image.getPixel(x, y, 1);
+                int b = image.getPixel(x, y, 2);
+
+                double newR = r * factorValue;
+                if (newR > 255) newR = 255;
+                double newG = g * factorValue;
+                if (newG > 255) newG = 255;
+                double newB = b * factorValue;
+                if (newB > 255) newB = 255;
 
 
+                image.setPixel(x,y, 0 , newR);
+                image.setPixel(x,y, 1 , newG);
+                image.setPixel(x,y, 2 , newB);
+            }
+        }
+    }
+    
+    
+
+
+}
 // ============================================================
 // MAIN - TESTING ONLY
 // ============================================================
@@ -241,8 +319,10 @@ int main()
         cout << "==============================\n";
         cout << "1. grayscale\n";
         cout << "2. Black & White\n";
+        cout << "3. Invert\n";
         cout << "5. flip\n";
         cout << "6. Rotate\n";
+        cout << "7. Darken and Lighten\n";
         cout << "17. Exit\n";
         cout << "Enter your choice: ";
         cin >> choice;
@@ -255,6 +335,10 @@ int main()
         {
             blackAndWhite(image);
         }
+        else if (choice == 3)
+        {
+            invert(image);
+        }
         else if (choice == 5)
         {
             flip(image);
@@ -262,6 +346,10 @@ int main()
         else if (choice == 6)
         {
             rotate(image);
+        }
+        else if (choice == 7)
+        {
+            darkenAndLighten(image);
         }
         else if (choice == 17)
         {
