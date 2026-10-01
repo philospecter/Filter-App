@@ -1,5 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include <iostream>
 #include <string>
 #include "Image_Class.h"
@@ -236,17 +234,44 @@ void rotate(Image& image)
 // ============================================================
 // FILTER 7 - Darken and Lighten
 // ============================================================
-    void darkenAndLighten(Image& image)
-    {
-        int percentage;
+  void darkenAndLighten(Image& image)
+{
+    string input;
+    int percentage = 0;
+    bool valid = false;
+
     cout << "Enter percentage to darken or lighten (negative for darken, positive for lighten): ";
-    cin >> percentage;
-    while (percentage < -100 || percentage > 100)
+
+    while (!valid)
     {
-        cout << "Invalid percentage. Please enter a value between -100 and 100." << endl;
-        cout << "Enter percentage: ";
-        cin >> percentage;
+        cin >> input;
+        valid = true;
+        
+        for (int i = 0; i < input.length(); i++)
+        {
+            if (i == 0 && input[i] == '-' && input.length() > 1)
+                continue;
+            if (input[i] < '0' || input[i] > '9')
+                valid = false;
+        }
+
+        if (valid && input.length() > 4)
+            valid = false;
+
+        if (valid)
+        {
+            percentage = stoi(input);
+            if (percentage < -100 || percentage > 100)
+                valid = false;
+        }
+
+        if (!valid)
+            cout << "Invalid input. Please enter a whole number between -100 and 100: ";
     }
+
+
+
+
     if (percentage < 0)
     {
         double factorValue = 1 - (abs(percentage) / 100.0);
