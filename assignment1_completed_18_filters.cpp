@@ -5,13 +5,14 @@
 //             Ammar Gabr        : 20250410 |||| filter: 2, 6
 //             Philopateer Farag : 20250475 |||| filter: 3, 7
 //             Mohamed Khaled    : 20250557 |||| filter: 4, 8
-//                                  Section: S13,14
+//                                  Section: S11,12 / Lab(7)
 //===================================================================================
 //===================================================================================
 
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <cmath>
 #include "Image_Class.h"
 
 using namespace std;
@@ -465,10 +466,352 @@ Image resize(Image& img)
     return resizedImg;
 }
 
-// ============================================================
-// MAIN - TESTING ONLY
-// ============================================================
 
+// ============================================================
+// FILTER 9 - MERGE TWO IMAGES
+// ============================================================
+void mergeImages(Image& image)
+{
+    string secondFile;
+    cout << "Enter the second image file name: ";
+    cin >> secondFile;
+
+    try
+    {
+        Image secondImage(secondFile);
+        int newWidth = min(image.width, secondImage.width);
+        int newHeight = min(image.height, secondImage.height);
+
+        for (int y = 0; y < newHeight; y++)
+        {
+            for (int x = 0; x < newWidth; x++)
+            {
+                for (int c = 0; c < 3; c++)
+                {
+                    int firstColor = image.getPixel(x, y, c);
+                    int secondColor = secondImage.getPixel(x, y, c);
+                    image.setPixel(x, y, c, (firstColor + secondColor) / 2);
+                }
+            }
+        }
+        cout << "The overlapping parts of the two images were merged.\n";
+    }
+    catch (const exception& e)
+    {
+        cout << "Could not load the second image: " << e.what() << endl;
+    }
+}
+
+// ============================================================
+// FILTER 10 - EDGE DETECTION
+// ============================================================
+void edgeDetection(Image& image)
+{
+    Image result(image.width, image.height);
+
+    for (int y = 0; y < image.height; y++)
+    {
+        for (int x = 0; x < image.width; x++)
+        {
+            int r = image.getPixel(x, y, 0);
+            int g = image.getPixel(x, y, 1);
+            int b = image.getPixel(x, y, 2);
+            int gray = (r + g + b) / 3;
+
+            int rightGray = gray;
+            int downGray = gray;
+
+            if (x + 1 < image.width)
+            {
+                rightGray = (
+                    image.getPixel(x + 1, y, 0) +
+                    image.getPixel(x + 1, y, 1) +
+                    image.getPixel(x + 1, y, 2)) / 3;
+            }
+
+            if (y + 1 < image.height)
+            {
+                downGray = (
+                    image.getPixel(x, y + 1, 0) +
+                    image.getPixel(x, y + 1, 1) +
+                    image.getPixel(x, y + 1, 2)) / 3;
+            }
+
+            int difference = abs(gray - rightGray) + abs(gray - downGray);
+            int color = (difference > 35) ? 0 : 255;
+
+            for (int c = 0; c < 3; c++)
+                result.setPixel(x, y, c, color);
+        }
+    }
+
+    image = result;
+}
+
+// ============================================================
+// FILTER 11 - CROP
+// ============================================================
+void cropImage(Image& image)
+{
+    int startX, startY, cropWidth, cropHeight;
+
+    cout << "Enter starting X and Y: ";
+    cin >> startX >> startY;
+    cout << "Enter crop width and height: ";
+    cin >> cropWidth >> cropHeight;
+
+    if (startX < 0 || startY < 0 || cropWidth <= 0 || cropHeight <= 0 ||
+        startX >= image.width || startY >= image.height ||
+        startX + cropWidth > image.width || startY + cropHeight > image.height)
+    {
+        cout << "Invalid crop dimensions. The image was not changed.\n";
+        return;
+    }
+
+    Image cropped(cropWidth, cropHeight);
+
+    for (int y = 0; y < cropHeight; y++)
+    {
+        for (int x = 0; x < cropWidth; x++)
+        {
+            for (int c = 0; c < 3; c++)
+                cropped.setPixel(x, y, c, image.getPixel(startX + x, startY + y, c));
+        }
+    }
+
+    image = cropped;
+}
+
+// ============================================================
+// FILTER 12 - BLUR
+// ============================================================
+void blurImage(Image& image)
+{
+    int radius;
+    cout << "Enter blur strength (1-5): ";
+    cin >> radius;
+
+    if (radius < 1 || radius > 5)
+    {
+        cout << "Invalid strength. Enter a number from 1 to 5.\n";
+        return;
+    }
+
+    Image result(image.width, image.height);
+
+    for (int y = 0; y < image.height; y++)
+    {
+        for (int x = 0; x < image.width; x++)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                int total = 0;
+                int count = 0;
+
+                for (int dy = -radius; dy <= radius; dy++)
+                {
+                    for (int dx = -radius; dx <= radius; dx++)
+                    {
+                        int nx = x + dx;
+                        int ny = y + dy;
+
+                        if (nx >= 0 && nx < image.width && ny >= 0 && ny < image.height)
+                        {
+                            total += image.getPixel(nx, ny, c);
+                            count++;
+                        }
+                    }
+                }
+
+                result.setPixel(x, y, c, total / count);
+            }
+        }
+    }
+
+    image = result;
+}
+
+// ============================================================
+// FILTER 13 - IMPROVE SUNLIGHT
+// ============================================================
+void improveSunlight(Image& image)
+{
+    for (int y = 0; y < image.height; y++)
+    {
+        for (int x = 0; x < image.width; x++)
+        {
+            for (int c = 0; c < 3; c++)
+            {
+                int color = image.getPixel(x, y, c);
+                int brighter = color + 45;
+
+                if (brighter > 255)
+                    brighter = 255;
+
+                image.setPixel(x, y, c, brighter);
+            }
+        }
+    }
+}
+
+// ============================================================
+// FILTER 14 - OLD TV EFFECT
+// ============================================================
+void oldTVEffect(Image& image)
+{
+    for (int y = 0; y < image.height; y++)
+    {
+        for (int x = 0; x < image.width; x++)
+        {
+            int r = image.getPixel(x, y, 0);
+            int g = image.getPixel(x, y, 1);
+            int b = image.getPixel(x, y, 2);
+            int gray = (r + g + b) / 3;
+
+            if (y % 4 == 0)
+                gray = gray * 3 / 4;
+
+            image.setPixel(x, y, 0, gray);
+            image.setPixel(x, y, 1, gray);
+            image.setPixel(x, y, 2, gray);
+        }
+    }
+}
+
+// ============================================================
+// FILTER 15 - PURPLE EFFECT
+// ============================================================
+void purpleEffect(Image& image)
+{
+    for (int y = 0; y < image.height; y++)
+    {
+        for (int x = 0; x < image.width; x++)
+        {
+            int r = image.getPixel(x, y, 0);
+            int g = image.getPixel(x, y, 1);
+            int b = image.getPixel(x, y, 2);
+
+            int newR = min(255, r + 35);
+            int newG = g * 3 / 4;
+            int newB = min(255, b + 55);
+
+            image.setPixel(x, y, 0, newR);
+            image.setPixel(x, y, 1, newG);
+            image.setPixel(x, y, 2, newB);
+        }
+    }
+}
+
+// ============================================================
+// FILTER 16 - INFRARED EFFECT
+// ============================================================
+void infraredEffect(Image& image)
+{
+    for (int y = 0; y < image.height; y++)
+    {
+        for (int x = 0; x < image.width; x++)
+        {
+            int r = image.getPixel(x, y, 0);
+            int g = image.getPixel(x, y, 1);
+            int b = image.getPixel(x, y, 2);
+
+            int newR = min(255, 255 - g);
+            int newG = min(255, 255 - b);
+            int newB = min(255, 255 - r);
+
+            image.setPixel(x, y, 0, newR);
+            image.setPixel(x, y, 1, newG);
+            image.setPixel(x, y, 2, newB);
+        }
+    }
+}
+
+// ============================================================
+// FILTER 17 - SKEW
+// ============================================================
+void skewImage(Image& image)
+{
+    double angle;
+    cout << "Enter skew angle in degrees (5-30): ";
+    cin >> angle;
+
+    if (angle < 5 || angle > 30)
+    {
+        cout << "Invalid angle. Enter a value from 5 to 30.\n";
+        return;
+    }
+
+    double tangent = tan(angle * 3.14159265358979323846 / 180.0);
+    int extraWidth = (int)(image.height * tangent);
+    if (extraWidth < 1)
+        extraWidth = 1;
+
+    Image skewed(image.width + extraWidth, image.height);
+
+    for (int y = 0; y < image.height; y++)
+    {
+        int shift = (int)((image.height - 1 - y) * tangent);
+
+        for (int x = 0; x < image.width; x++)
+        {
+            for (int c = 0; c < 3; c++)
+                skewed.setPixel(x + shift, y, c, image.getPixel(x, y, c));
+        }
+    }
+
+    image = skewed;
+}
+
+// ============================================================
+// FILTER 18 - OIL PAINTING EFFECT
+// ============================================================
+void oilPainting(Image& image)
+{
+    Image result(image.width, image.height);
+
+    for (int y = 0; y < image.height; y++)
+    {
+        for (int x = 0; x < image.width; x++)
+        {
+            int totalR = 0;
+            int totalG = 0;
+            int totalB = 0;
+            int count = 0;
+
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    int nx = x + dx;
+                    int ny = y + dy;
+
+                    if (nx >= 0 && nx < image.width && ny >= 0 && ny < image.height)
+                    {
+                        totalR += image.getPixel(nx, ny, 0);
+                        totalG += image.getPixel(nx, ny, 1);
+                        totalB += image.getPixel(nx, ny, 2);
+                        count++;
+                    }
+                }
+            }
+
+            int r = (totalR / count / 32) * 32;
+            int g = (totalG / count / 32) * 32;
+            int b = (totalB / count / 32) * 32;
+
+            result.setPixel(x, y, 0, r);
+            result.setPixel(x, y, 1, g);
+            result.setPixel(x, y, 2, b);
+        }
+    }
+
+    image = result;
+}
+
+
+// ============================================================
+// MAIN
+// ============================================================
 int main()
 {
     string fileName;
@@ -480,74 +823,87 @@ int main()
     try
     {
         Image image(fileName);
+        int choice = 0;
 
-        int choice;
+        while (choice != 19)
+        {
+            cout << "\n====================================\n";
+            cout << "          IMAGE FILTERS\n";
+            cout << "====================================\n";
+            cout << " 1. Grayscale\n";
+            cout << " 2. Black & White\n";
+            cout << " 3. Invert\n";
+            cout << " 4. Add Frame\n";
+            cout << " 5. Flip\n";
+            cout << " 6. Rotate\n";
+            cout << " 7. Darken / Lighten\n";
+            cout << " 8. Resize\n";
+            cout << " 9. Merge Images\n";
+            cout << "10. Edge Detection\n";
+            cout << "11. Crop\n";
+            cout << "12. Blur\n";
+            cout << "13. Improve Sunlight\n";
+            cout << "14. Old TV Effect\n";
+            cout << "15. Purple Effect\n";
+            cout << "16. Infrared Effect\n";
+            cout << "17. Skew\n";
+            cout << "18. Oil Painting\n";
+            cout << "19. Save and Exit\n";
+            cout << "Enter your choice: ";
+            cin >> choice;
 
-        cout << "\n==============================\n";
-        cout << "       IMAGE FILTERS\n";
-        cout << "==============================\n";
-        cout << "1. grayscale\n";
-        cout << "2. Black & White\n";
-        cout << "3. Invert\n";
-        cout << "4. Adding Frame\n";
-        cout << "5. flip\n";
-        cout << "6. Rotate\n";
-        cout << "7. Darken and Lighten\n";
-        cout << "8.Resize\n";
-        cout << "17. Exit\n";
-        cout << "Enter your choice: ";
-        cin >> choice;
+            if (choice == 1)
+                grayscale(image);
+            else if (choice == 2)
+                blackAndWhite(image);
+            else if (choice == 3)
+                invert(image);
+            else if (choice == 4)
+                frameFilter(image);
+            else if (choice == 5)
+                flip(image);
+            else if (choice == 6)
+                rotate(image);
+            else if (choice == 7)
+                darkenAndLighten(image);
+            else if (choice == 8)
+                image = resize(image);
+            else if (choice == 9)
+                mergeImages(image);
+            else if (choice == 10)
+                edgeDetection(image);
+            else if (choice == 11)
+                cropImage(image);
+            else if (choice == 12)
+                blurImage(image);
+            else if (choice == 13)
+                improveSunlight(image);
+            else if (choice == 14)
+                oldTVEffect(image);
+            else if (choice == 15)
+                purpleEffect(image);
+            else if (choice == 16)
+                infraredEffect(image);
+            else if (choice == 17)
+                skewImage(image);
+            else if (choice == 18)
+                oilPainting(image);
+            else if (choice == 19)
+                break;
+            else
+            {
+                cout << "Invalid choice. Please choose from 1 to 19.\n";
+                continue;
+            }
 
-        if (choice == 1)
-        {
-            grayscale(image);
-        }
-        else if (choice == 2)
-        {
-            blackAndWhite(image);
-        }
-        else if (choice == 3)
-        {
-            invert(image);
-        }
-        else if (choice == 4)
-        {
-            frameFilter(image);
-        }
-
-        else if (choice == 5)
-        {
-            flip(image);
-        }
-        else if (choice == 6)
-        {
-            rotate(image);
-        }
-        else if (choice == 7)
-        {
-            darkenAndLighten(image);
-        }
-        else if (choice == 8)
-        {
-            image=resize(image);
-        }
-
-        else if (choice == 17)
-        {
-            return 0;
-        }
-        else
-        {
-            cout << "Invalid choice.\n";
-            return 0;
+            if (choice >= 1 && choice <= 18)
+                cout << "Filter operation finished.\n";
         }
 
-        cout << "\nEnter output image file name: ";
+        cout << "Enter output image file name (example: result.jpg): ";
         cin >> outputFileName;
-
         image.saveImage(outputFileName);
-
-        cout << "\nImage saved successfully.\n";
+        cout << "Image saved successfully.\n";
     }
     catch (const exception& e)
     {
